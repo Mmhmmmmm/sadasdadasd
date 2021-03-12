@@ -34,8 +34,8 @@ def parse(args=None):
 
     parser.add_argument('--attrs', dest='attrs', default=attrs_default, nargs='+', help='attributes to learn')
     parser.add_argument('--data', dest='data', type=str, choices=['CelebA', 'CelebA-HQ'], default='CelebA')
-    parser.add_argument('--data_path', dest='data_path', type=str, default='data/CelebA/Img/img_align_celeba/img_align_celeba')
-    parser.add_argument('--attr_path', dest='attr_path', type=str, default='data/CelebA/Anno/list_attr_celeba.txt')
+    parser.add_argument('--data_path', dest='data_path', type=str, default='data/img_align_celeba')
+    parser.add_argument('--attr_path', dest='attr_path', type=str, default='data/list_attr_celeba.txt')
     parser.add_argument('--image_list_path', dest='image_list_path', type=str, default='data/image_list.txt')
 
     parser.add_argument('--img_size', dest='img_size', type=int, default=128)
@@ -83,7 +83,7 @@ def parse(args=None):
     parser.add_argument('--sample_interval', dest='sample_interval', type=int, default=1000)
     parser.add_argument('--gpu', dest='gpu', type=bool, default=False)
     parser.add_argument('--multi_gpu', dest='multi_gpu', action='store_true')
-    parser.add_argument('--experiment_name', dest='experiment_name', default=datetime.datetime.now().strftime("%I-%M%p on %B %d, %Y"))
+    parser.add_argument('--experiment_name', dest='experiment_name', type=str,default="cafe_gan")
 
     return parser.parse_args(args)
 
@@ -94,10 +94,10 @@ args.lr_base = args.lr
 args.n_attrs = len(args.attrs)
 args.betas = (args.beta1, args.beta2)
 
-os.makedirs(join('output', args.experiment_name), exist_ok=True)
-os.makedirs(join('output', args.experiment_name, 'checkpoint'), exist_ok=True)
-os.makedirs(join('output', args.experiment_name, 'sample_training'), exist_ok=True)
-with open(join('output', args.experiment_name, 'setting.txt'), 'w') as f:
+os.makedirs(join('/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name), exist_ok=True)
+os.makedirs(join('/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'checkpoint'), exist_ok=True)
+os.makedirs(join('/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'sample_training'), exist_ok=True)
+with open(join('/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'setting.txt'), 'w') as f:
     f.write(json.dumps(vars(args), indent=4, separators=(',', ':')))
 
 if args.data == 'CelebA':
@@ -120,8 +120,8 @@ print('Training images:', len(train_dataset), '/', 'Validating images:', len(val
 
 attgan = AttGAN(args)
 if args.is_resume:
-    attgan.load(os.path.join('output', args.experiment_name, 'checkpoint','weights.'+str(args.load_epoch)+'.pth'))
-    ea = event_accumulator.EventAccumulator(join('output', args.experiment_name, 'summary', args.event_name))
+    attgan.load(os.path.join('/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'checkpoint','weights.'+str(args.load_epoch)+'.pth'))
+    ea = event_accumulator.EventAccumulator(join('/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'summary', args.event_name))
     ea.Reload()
     d_loss = ea.scalars.Items('D/d_loss')
     it = d_loss[-1][1]
@@ -132,7 +132,7 @@ progressbar = Progressbar()
 # writer = SummaryWriter(join('output', args.experiment_name, 'summary')) if not args.is_resume else \
     # SummaryWriter(join('output', args.experiment_name, 'summary', args.writer_name))
 
-writer = SummaryWriter(join('output', args.experiment_name, 'summary'))
+writer = SummaryWriter(join('/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'summary'))
 
 fixed_img_real, fixed_label_org = next(iter(valid_dataloader))
 fixed_img_real = fixed_img_real.cuda() if args.gpu else fixed_img_real
@@ -181,7 +181,7 @@ for epoch in range(args.load_epoch, args.epochs):
             # If you'd like to keep weights of G, D, optim_G, optim_D,
             # please use save() instead of saveG().
             attgan.save(os.path.join(
-                'output', args.experiment_name, 'checkpoint', 'weights.{:d}.pth'.format(epoch)
+                '/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'checkpoint', 'weights.{:d}.pth'.format(epoch)
             ))
 
         if (it+1) % args.sample_interval == 0:
@@ -194,7 +194,7 @@ for epoch in range(args.load_epoch, args.epochs):
                 samples = torch.cat(samples, dim=3)
                 writer.add_image('sample', vutils.make_grid(samples, nrow=1, normalize=True, range=(-1., 1.)), it+1)
                 vutils.save_image(samples, os.path.join(
-                        'output', args.experiment_name, 'sample_training',
+                        '/concent/driver/Shareddriver/UESTC_learning_in_vision/MyDrive/cafe_gan/output', args.experiment_name, 'sample_training',
                         'Epoch_({:d})_({:d}of{:d}).jpg'.format(epoch, it%it_per_epoch+1, it_per_epoch)
                     ), nrow=1, normalize=True, range=(-1., 1.))
         it += 1
