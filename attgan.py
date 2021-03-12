@@ -253,7 +253,7 @@ class AttGAN():
         gc_loss = 0
         for i in range(len(cls1_rx_fake)):
             gc_loss += F.binary_cross_entropy_with_logits(cls1_rx_fake[i], label_trg[:,i].view(label_trg.size(0), 1)) + \
-                       F.binary_cross_entropy_with_logits(cls2_rx_fake[i], 1 - label_trg[:,i].view(label_trg.size(0), 1))
+                       F.binary_cross_entropy_with_logits(cls2_rx_fake[i], label_trg[:,i].view(label_trg.size(0), 1))
 
         gr_loss = F.l1_loss(img_recon, img_real)
         gcm_loss = 0
@@ -331,7 +331,7 @@ class AttGAN():
         dc_loss = 0
         for i in range(len(cls1_rx_real)):
             dc_loss += F.binary_cross_entropy_with_logits(cls1_rx_real[i], label_org[:,i].view(label_org.size(0), 1)) + \
-                       F.binary_cross_entropy_with_logits(cls2_rx_real[i], 1 - label_org[:,i].view(label_org.size(0), 1))
+                       F.binary_cross_entropy_with_logits(cls2_rx_real[i], label_org[:,i].view(label_org.size(0), 1))
         d_loss = df_loss + self.lambda_gp * df_gp + self.lambda_Datt * datt_loss\
                  + self.lambda_Dcls * dc_loss
 
